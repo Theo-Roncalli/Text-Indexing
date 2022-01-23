@@ -23,11 +23,9 @@ class Trie(Tree):
     
     def add(self, words):
         """
-        Construct a trie from a list of words
-        
+        Construct a trie from a list of words.
         Input:
             words: a list of strings
-        
         Output:
             trie containing the words, annotated with the words indices
         """
@@ -40,27 +38,26 @@ class Trie(Tree):
     def insert(self, word, index):
         """
         Insert word in a trie and add its index.
-        
         Input:
             trie: a trie (ete3.Tree)
             word: a string
             index: an integer corresponding to the word index
-        
         Result:
             Modifies input trie. It inserts new branches in alphabetical order
         """
     
         if word:
+            c = word[0]
             pos = -1
             for i, child in enumerate(self.children):
-                if child.name >= word[0]:
+                if child.name >= c:
                     pos = i
                     break
             
             if pos == -1:
-                self.children.append(Trie(name = word[0]))
-            elif self.children[pos].name != word[0]:
-                self.children.insert(pos, Trie(name = word[0]))
+                self.children.append(Trie(name = c))
+            elif child.name != c:
+                self.children.insert(pos, Trie(name = c))
             
             self.children[pos].insert(word[1:], index)
     
@@ -69,6 +66,32 @@ class Trie(Tree):
                 self.index.append(index)
             else:
                 self.add_features(index = [index])
+    
+    def search_pattern(self, text, pos = None):
         
+        occurrences = []
         
+        if pos is None:
+            for pos in range(len(text)):
+                occs = self.search_pattern(text, pos = pos)
+                for occ in occs:
+                    occurrences.append((pos, occ))
+            return occurrences
+        else:
+            if hasattr(self, "index"):
+                occurrences.extend(self.index)
+            if pos >= len(text):
+                return occurrences
+            for child in self.children:
+                if child.name == text[pos]:
+                    occs = child.search_pattern(text, pos = pos+1)
+                    occurrences.extend(occs)
+            return occurrences
+
+            
+                
+                
+            
+        
+    
 
