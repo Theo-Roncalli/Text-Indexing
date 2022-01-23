@@ -63,4 +63,3 @@ def trie_print(trie):
         Print a trie to the stdout.
     """
     print(trie.get_ascii(show_internal = True, attributes=["name", "index"]))
-
