@@ -34,6 +34,7 @@ class Trie(Tree):
         for word in words:
             index += 1
             self.insert(word, index)
+        self.max_index = index
     
     def insert(self, word, index):
         """
@@ -55,11 +56,15 @@ class Trie(Tree):
                     break
             
             if pos == -1:
-                self.children.append(Trie(name = c))
+                child = Trie(name = c)
+                self.children.append(child)
             elif child.name != c:
-                self.children.insert(pos, Trie(name = c))
+                child = Trie(name = c)
+                self.children.insert(pos, child)
+            else:
+                child = self.children[pos]
             
-            self.children[pos].insert(word[1:], index)
+            child.insert(word[1:], index)
     
         else:
             if hasattr(self, "index"):
