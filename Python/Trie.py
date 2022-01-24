@@ -67,31 +67,44 @@ class Trie(Tree):
             else:
                 self.add_features(index = [index])
     
-    def search_pattern(self, text, pos = None):
-        
-        occurrences = []
+    def pattern_search(self, text, pos = None):
+        """
+        Find occurrences of multiple patterns.
+        Input:
+            text : a string
+            pos : an integer, optional
+            For searching patterns at a specific position in text. The default is None.
+        Output:
+            list of paired tuple (pos, pattern)
+        """
         
         if pos is None:
+            occurrences = []
             for pos in range(len(text)):
-                occs = self.search_pattern(text, pos = pos)
-                for occ in occs:
-                    occurrences.append((pos, occ))
+                patterns = self.pattern_search(text, pos = pos)
+                for pattern in patterns:
+                    occurrences.append((pos, pattern))
             return occurrences
         else:
+            patterns = []
             if hasattr(self, "index"):
-                occurrences.extend(self.index)
+                patterns.extend(self.index)
             if pos >= len(text):
-                return occurrences
+                return patterns
             for child in self.children:
                 if child.name == text[pos]:
-                    occs = child.search_pattern(text, pos = pos+1)
-                    occurrences.extend(occs)
-            return occurrences
+                    patt = child.pattern_search(text, pos = pos+1)
+                    patterns.extend(patt)
+            return patterns
 
-            
-                
-                
-            
-        
+class Suffix_tree(Trie):
     
+    def __init__(self, text = None):
+        
+        super().__init__()
+        
+        if text:
+            for pos in range(len(text)):
+                suffix = text[pos:]
+                self.insert(suffix, pos)
 
