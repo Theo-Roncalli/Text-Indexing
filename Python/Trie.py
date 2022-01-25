@@ -84,14 +84,14 @@ class Trie(Tree):
         """
         
         if pos is None:
-            occurrences = []
+            occurrences = list()
             for pos in range(len(text)):
                 patterns = self.pattern_search(text, pos = pos)
                 for pattern in patterns:
                     occurrences.append((pos, pattern))
             return occurrences
         else:
-            patterns = []
+            patterns = list()
             if hasattr(self, "index"):
                 patterns.extend(self.index)
             if pos >= len(text):
@@ -102,14 +102,106 @@ class Trie(Tree):
                     patterns.extend(patt)
             return patterns
 
-class Suffix_tree(Trie):
+class SuffixTree(Trie):
     
-    def __init__(self, text = None):
+    def __init__(self, text = None, name = None, compression = False):
         
-        super().__init__()
+        if name:
+            super().__init__(name = name)
+        else:
+            super().__init__()
         
         if text:
             for pos in range(len(text)):
                 suffix = text[pos:]
                 self.insert(suffix, pos)
+        
+        if compression is True:
+            self.compressed = True
+            self.compress()
+        else:
+            self.compressed = False
+    
+    def insert(self, word, index):
+    
+        if word:
+            c = word[0]
+            pos = -1
+            for i, child in enumerate(self.children):
+                if child.name >= c:
+                    pos = i
+                    break
+        
+            if pos == -1:
+                child = SuffixTree(name = c)
+                self.children.append(child)
+            elif child.name != c:
+                child = SuffixTree(name = c)
+                self.children.insert(pos, child)
+            else:
+                child = self.children[pos]
+        
+            child.insert(word[1:], index)
 
+        else:
+            if hasattr(self, "index"):
+                self.index.append(index)
+            else:
+                self.add_features(index = [index])
+    
+    def compress(self):
+
+        def compression(self):
+                
+            children = self.children
+        
+            for child in children:
+                child.compress()
+                
+            if len(children) == 1:
+                self.name += child.name
+                if hasattr(child, "index"):
+                    if hasattr(self, "index"):
+                        self.index.extend(child.index)
+                    else:
+                        self.index = child.index
+                self.children = child.children
+        
+        self.compressed = True
+        compression(self)
+    
+    def pattern_search(self, pattern):
+        
+        if self.compressed is False:
+            occs = list()
+            if pattern:
+                c = pattern[0]        
+                for child in self.children:
+                    if child.name == c:
+                        occs = child.pattern_search(pattern[1:])
+                        break
+            else:
+                for leaves in self.get_leaves():
+                    occs.extend(leaves.index)
+            return sorted(occs)
+        
+        else:
+
+            def lcp_length(child_name, pattern):
+                # Compute the longest common prefix (lcp) length between the child name and the pattern
+                for i, (c1, c2) in enumerate(zip(child_name, pattern)):
+                    if c1 != c2:
+                        return i
+                return i+1
+    
+            for child in self.children:
+                lcp = lcp_length(child.name, pattern)
+                
+                if lcp == len(pattern):
+                    occs = list()
+                    for leaves in child.get_leaves():
+                        occs.extend(leaves.index)
+                    return occs
+                elif lcp == len(child.name):
+                    return sorted(child.pattern_search(pattern[lcp:]))
+            return list()
