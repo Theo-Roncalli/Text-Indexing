@@ -25,9 +25,10 @@ class Trie(Tree):
         """
         Construct a trie from a list of words.
         Input:
+            trie: a trie (ete3.Tree)
             words: a list of strings
         Output:
-            trie containing the words, annotated with the words indices
+            trie containing the words, annotated with the words indices.
         """
         
         index = self.max_index
@@ -44,7 +45,7 @@ class Trie(Tree):
             word: a string
             index: an integer corresponding to the word index
         Result:
-            Modifies input trie. It inserts new branches in alphabetical order
+            Modifies input trie. It inserts new branches in alphabetical order.
         """
     
         if word:
@@ -76,6 +77,7 @@ class Trie(Tree):
         """
         Find occurrences of multiple patterns.
         Input:
+            trie: a trie (ete3.Tree)
             text : a string
             pos : an integer, optional
             For searching patterns at a specific position in text. The default is None.
@@ -112,9 +114,12 @@ class SuffixTree(Trie):
             super().__init__()
         
         if text:
+            self.text = True
             for pos in range(len(text)):
                 suffix = text[pos:]
                 self.insert(suffix, pos)
+        else:
+            self.text = False
         
         if compression is True:
             self.compressed = True
@@ -122,8 +127,35 @@ class SuffixTree(Trie):
         else:
             self.compressed = False
     
-    def insert(self, word, index):
+    def build(self, text):
+        """
+        Build a suffix trie from a given text.
+        Input:
+            trie: a trie (ete3.Tree)
+            text: a string
+        Result:
+            Modifies input suffix trie. It inserts new branches for all suffices in the text.
+        """
+        
+        if self.text is False:
+            self.text = True
+            for pos in range(len(text)):
+                suffix = text[pos:]
+                self.insert(suffix, pos)
+        else:
+            raise ValueError("The suffix tree is already build.")
     
+    def insert(self, word, index):
+        """
+        Insert word in a suffix trie and add its index.
+        Input:
+            trie: a trie (ete3.Tree)
+            word: a string
+            index: an integer corresponding to the word index
+        Result:
+            Modifies input suffix trie. It inserts new branches in alphabetical order.
+        """
+        
         if word:
             c = word[0]
             pos = -1
@@ -150,6 +182,13 @@ class SuffixTree(Trie):
                 self.add_features(index = [index])
     
     def compress(self):
+        """
+        Compress the branches of the suffix trie.
+        Input:
+            trie : a trie (ete3.Tree)
+        Output:
+            Modifies input suffix trie. It compresses the branch where nodes have only one child.
+        """
 
         def compression(self):
                 
@@ -171,6 +210,14 @@ class SuffixTree(Trie):
         compression(self)
     
     def pattern_search(self, pattern):
+        """
+        Find occurrences of multiple patterns.
+        Input:
+            trie : a trie (ete3.Tree)
+            pattern : a string
+        Output:
+            list of positions where the pattern occurs.
+        """
         
         if self.compressed is False:
             occs = list()
@@ -186,7 +233,7 @@ class SuffixTree(Trie):
             return sorted(occs)
         
         else:
-
+            
             def lcp_length(child_name, pattern):
                 # Compute the longest common prefix (lcp) length between the child name and the pattern
                 for i, (c1, c2) in enumerate(zip(child_name, pattern)):
