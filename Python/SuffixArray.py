@@ -22,7 +22,7 @@ class SuffixArray(list):
 
     def pattern_search(self, text, pattern):
         """
-        Find occurrences of multiple patterns.
+        Find occurrences of a pattern in a text.
         Input:
             suffixarray: a suffix array
             text: a string
@@ -55,5 +55,35 @@ class SuffixArray(list):
         
         return sorted(self[start:end])
 
+    def to_bwt(self, text):
+        """
+        Construct the Burrows Wheeler transform (BWT)
+        Input:
+            text: a string
+        Output:
+            the BW-transformation (a string)
+        """
+    
+        bwt = str()
         
-        
+        for i in range(len(self)):
+            bwt += text[self[i] - 1]
+    
+        return bwt
+
+def bwt_search(bwt, text, pattern):
+    """
+    Find occurrences of a pattern in a text.
+    Input:
+        bwt: a BW-transformer (string)
+        text: a string
+        pattern: a string
+    Output:
+        list of positions where the pattern occurs
+    """
+    
+    return None
+    
+    
+    
+    
