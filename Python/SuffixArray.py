@@ -5,6 +5,7 @@ ALPHABET.insert(0, ALPHABET.pop(ALPHABET.index("$")))
 POS = {c : p for (p, c) in enumerate(ALPHABET)}
 
 class SaStrOrder:
+    
     def __init__(self, inner):
         self.inner = inner
         
@@ -26,6 +27,7 @@ class SuffixArray(list):
         super().__init__()
         
         if text:
+            if text[-1] != "$": text += "$"
             pairs = list()
             for index in range(len(text)):
                 pairs.append((index, text[index:]))
@@ -45,3 +47,39 @@ class SuffixArray(list):
                     self.from_trie(child)
             else:
                 self.extend(trie.index)
+    
+    def pattern_search(self, text, pattern):
+        """
+        Find occurrences of a pattern in a text.
+        Input:
+            suffixarray: a suffix array
+            text: a string
+            pattern : a string
+        Output:
+            list of positions where the pattern occurs
+        """
+        
+        start = 0
+        end = len(self)
+        
+        def narrow_start(idx, letter):
+            for j in range(start, end):
+                if text[self[j] + idx] == letter:
+                    return j
+            return end
+    
+        def narrow_end(idx, letter):
+            for j in reversed(range(start, end)):
+                if text[self[j] + idx] == letter:
+                    return j+1
+            return start
+    
+        for idx, c in enumerate(pattern):
+            start = narrow_start(idx, c)
+            end   = narrow_end(idx, c)
+
+        if start >= end:
+            return None
+        
+        return sorted(self[start:end])
+
