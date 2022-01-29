@@ -4,21 +4,18 @@ ALPHABET = [chr(i) for i in range(128)]
 ALPHABET.insert(0, ALPHABET.pop(ALPHABET.index("$")))
 POS = {c : p for (p, c) in enumerate(ALPHABET)}
 
-class SaStrOrder:
+class SaStrOrder(str):
     
-    def __init__(self, inner):
-        self.inner = inner
+    def __init__(self, text):
+        super().__init__()
         
-    def __str__(self):
-        return self.inner
-
     def __lt__(self, other):
-        for i in range(min(len(self.inner), len(other.inner))):
-            a = POS.get(self.inner[i])
-            b = POS.get(other.inner[i])
+        for i in range(min(len(self), len(other))):
+            a = POS.get(self[i])
+            b = POS.get(other[i])
             if a != b:
                 return a < b
-        return len(self.inner) < len(other.inner)
+        return len(self) < len(other)
 
 class SuffixArray(list):
     
@@ -30,13 +27,13 @@ class SuffixArray(list):
             if text[-1] != "$": text += "$"
             pairs = list()
             for index in range(len(text)):
-                pairs.append((index, text[index:]))
+                pairs.append((index, SaStrOrder(text[index:])))
             pairs.sort(key = lambda x : x[1])
             self.extend([i for (i, _) in pairs])
         elif not text and trie:
             self.from_trie(trie)
         else:
-            raise TypeError("SuffixArray __init__() takes at lease one argument: text (a string) or trie")
+            raise TypeError("SuffixArray __init__() takes at least one argument: text (a string) or trie")
         
     def from_trie(self, trie):
             
@@ -62,6 +59,8 @@ class SuffixArray(list):
         start = 0
         end = len(self)
         
+        if text[-1] != "$": text += "$"
+        
         def narrow_start(idx, letter):
             for j in range(start, end):
                 if text[self[j] + idx] == letter:
@@ -82,4 +81,3 @@ class SuffixArray(list):
             return None
         
         return sorted(self[start:end])
-
