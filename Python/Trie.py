@@ -25,7 +25,7 @@ class Trie(Tree):
         """
         Construct a trie from a list of words.
         Input:
-            trie: a trie (ete3.Tree)
+            trie: a trie
             words: a list of strings
         Output:
             trie containing the words, annotated with the words indices.
@@ -41,7 +41,7 @@ class Trie(Tree):
         """
         Insert word in a trie and add its index.
         Input:
-            trie: a trie (ete3.Tree)
+            trie: a trie
             word: a string
             index: an integer corresponding to the word index
         Result:
@@ -64,7 +64,6 @@ class Trie(Tree):
                 self.children.insert(pos, child)
             else:
                 child = self.children[pos]
-            
             child.insert(word[1:], index)
     
         else:
@@ -77,7 +76,7 @@ class Trie(Tree):
         """
         Find occurrences of multiple patterns.
         Input:
-            trie: a trie (ete3.Tree)
+            trie: a trie
             text : a string
             pos : an integer, optional
             For searching patterns at a specific position in text. The default is None.
@@ -131,7 +130,7 @@ class SuffixTree(Trie):
         """
         Build a suffix trie from a given text.
         Input:
-            trie: a trie (ete3.Tree)
+            trie: a trie
             text: a string
         Result:
             Modifies input suffix trie. It inserts new branches for all suffices in the text.
@@ -149,7 +148,7 @@ class SuffixTree(Trie):
         """
         Insert word in a suffix trie and add its index.
         Input:
-            trie: a trie (ete3.Tree)
+            trie: a trie
             word: a string
             index: an integer corresponding to the word index
         Result:
@@ -185,8 +184,8 @@ class SuffixTree(Trie):
         """
         Compress the branches of the suffix trie.
         Input:
-            trie : a trie (ete3.Tree)
-        Output:
+            trie : a trie
+        Result:
             Modifies input suffix trie. It compresses the branch where nodes have only one child.
         """
 
@@ -211,12 +210,12 @@ class SuffixTree(Trie):
     
     def pattern_search(self, pattern):
         """
-        Find occurrences of multiple patterns.
+        Find occurrences of a pattern in a text.
         Input:
-            trie : a trie (ete3.Tree)
+            trie : a trie
             pattern : a string
         Output:
-            list of positions where the pattern occurs.
+            list of positions where the pattern occurs
         """
         
         if self.compressed is False:
