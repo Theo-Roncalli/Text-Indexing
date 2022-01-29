@@ -1,34 +1,21 @@
 #!/usr/bin/env python3
 
-import SuffixArray
+import SuffixArray as sa
 
 class BurrowsWheeler(str):
     
-    def __new__(cls, text, sa = None):
+    def __new__(self, text, suffix_array = None):
+        
+        if text[-1] != "$": text += "$"
 
-        if not sa:
-            sa = SuffixArray.SuffixArray(text)
+        if not suffix_array:
+            suffix_array = sa.SuffixArray(text = text)
         bwt = str()
-        for idx in sa:
+        for idx in suffix_array:
             bwt += text[idx-1]
-
-        obj = str.__new__(cls, bwt)
-        return obj
+        
+        return str.__new__(self, bwt)
+#        return sa.SaStrOrder.__new__(self, bwt)
+        
     
-    """
-    def __init__(self, text, sa = None):
-        
-        if not sa:
-            sa = SuffixArray.SuffixArray(text)
-            
-        bwt = str()
-        for idx in sa:
-            bwt += text[idx-1]
-        
-        self.text = text
-        self.bwt = bwt
-        """        
-        
-        
-        
-        
+
