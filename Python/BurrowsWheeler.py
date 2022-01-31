@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 
+ALPHABET = [chr(i) for i in range(128)]
+ALPHABET.insert(0, ALPHABET.pop(ALPHABET.index("$")))
+for i in range(0,10): ALPHABET.remove(str(i))
+POS = {c : p for (p, c) in enumerate(ALPHABET)}
+
 import SuffixArray as sa
 
 class BurrowsWheeler():
@@ -109,3 +114,25 @@ class BurrowsWheeler():
         
         return text
 
+    def count(self):
+        """
+        Returns an array of length of the alphabet such that the i-th element corresponds
+        to the number of symbols smaller than the i-th symbol in the lexigraphical order.
+        """
+        
+        counts = dict()
+        counts[ALPHABET[0]] = 0
+        last_letter = ALPHABET[0]
+        
+        for letter in ALPHABET[1:]:
+            counts[letter] = counts[last_letter] + self.bwt.count(last_letter)
+            last_letter = letter
+        
+        return counts
+    
+    def occ(self, letter, pos):
+        """
+        Returns the number of occurrences of a letter in the text prefix [0:pos-1].
+        """
+        
+        return self.bwt[:pos].count(letter)
