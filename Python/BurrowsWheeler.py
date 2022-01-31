@@ -136,3 +136,18 @@ class BurrowsWheeler():
         """
         
         return self.bwt[:pos].count(letter)
+    
+    def ltf_mapping(self, index, counts = None):
+        """
+        Performs last-to-first column mapping.
+        """
+        
+        if counts is None:
+            counts = self.count()
+        
+        letter = self.bwt[index]
+        
+        return counts[letter] + self.occ(letter, index)
+        
+        
+        
