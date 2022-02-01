@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
-ALPHABET = [chr(i) for i in range(128)]
+ALPHABET = [chr(i) for i in range(32,128)]
+ALPHABET.insert(0, "\n"); ALPHABET.insert(1, "\t"); ALPHABET.insert(2, "\r")
 ALPHABET.insert(0, ALPHABET.pop(ALPHABET.index("$")))
-for i in range(0,10): ALPHABET.remove(str(i))
+for i in range(10): ALPHABET.remove(str(i))
 POS = {c : p for (p, c) in enumerate(ALPHABET)}
 NEXT_LETTER = {ALPHABET[i]: ALPHABET[i+1] for i in range(len(ALPHABET) - 1)}
 
@@ -10,10 +11,10 @@ import SuffixArray as sa
 
 class BurrowsWheeler():
     
-    def __init__(self, text, suffix_array = None, compression = None, occs = True):
+    def __init__(self, text, suffix_array = None, compression = None, occs = True, step = 50):
 
         if occs not in [True, False]:
-            raise ValueError("occs argument must take a boolean value.")
+            raise ValueError("\"occs\" argument must take a boolean value.")
         
         def counts(self):
             """
@@ -34,8 +35,10 @@ class BurrowsWheeler():
         if not suffix_array:
             suffix_array = sa.SuffixArray(text = text)
         self.bwt = str()
-        for idx in suffix_array:
-            self.bwt += text[idx-1]
+        self.mark = dict()
+        for idx_bwt, idx_sa in enumerate(suffix_array):
+            self.bwt += text[idx_sa-1]
+            self.mark[idx_bwt] = idx_sa
         
         counts(self)        
         
@@ -177,14 +180,15 @@ class BurrowsWheeler():
         """
         
         letter = self.bwt[index]
-        
         return self.counts[letter] + self.occs[letter][index] - 1
     
     def occurrence_number(self, pattern):
         
         if not hasattr(self, "occs"):
             raise AttributeError("The attribute \"occs\" must be computed before using indexing.")
-        
+        elif self.compression is not None:
+            raise ValueError("The bw-transformation must be decompressed before.")
+                    
         letter = pattern[len(pattern) - 1]
         First = self.counts[letter]; Last = self.counts[NEXT_LETTER[letter]] - 1;
         
@@ -196,15 +200,28 @@ class BurrowsWheeler():
                 break
         
         return None if Last < First else (First, Last)
+    
+    def pattern_search(self, pattern):
+        
+        start, end = self.occurrence_number(pattern)
+        return [self.mark[i] for i in range(start, end)]
+    
+    """
+    def get_position(self, i):
+        "Returns the position in the text of the bwt's i-th element."
+        idx = next(row for row in self.mark.keys() if row >= i)
+        if idx == i:
+            return self.mark[idx]
+        else:
+            return None
+    """
 
 def pattern_search(text, pattern):
     
     size_text = len(text)
     size_pattern = len(pattern)
     pos = list()
-    
     for index in range(size_text - size_pattern):
         if text[index:index+size_pattern] == pattern:
             pos.append(index)
-
     return pos
