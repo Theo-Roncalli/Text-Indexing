@@ -10,7 +10,10 @@ import SuffixArray as sa
 
 class BurrowsWheeler():
     
-    def __init__(self, text, suffix_array = None, compression = None):
+    def __init__(self, text, suffix_array = None, compression = None, occs = True):
+
+        if occs not in [True, False]:
+            raise ValueError("occs argument must take a boolean value.")
         
         def counts(self):
             """
@@ -34,7 +37,10 @@ class BurrowsWheeler():
         for idx in suffix_array:
             self.bwt += text[idx-1]
         
-        counts(self)
+        counts(self)        
+        
+        if occs is True:
+            self.occurrence_count()
         
         if not compression:
             self.compression = None
@@ -48,7 +54,7 @@ class BurrowsWheeler():
     def compress(self, encode="run-length"):
         
         if self.compression:
-            raise ValueError("The bw-transform is already compressed.")
+            raise ValueError("The bw-transformation is already compressed.")
         
         if encode == "run-length":
             self.compression = "run-length"
@@ -73,7 +79,7 @@ class BurrowsWheeler():
     def decompress(self):
         
         if not self.compression:
-            raise ValueError("The bw-transform is already decompressed.")
+            raise ValueError("The bw-transformation is already decompressed.")
         
         if self.compression == "run-length":
             self.compression = None
@@ -96,6 +102,9 @@ class BurrowsWheeler():
         """
         Implement decompression of a run-length encoding bwt text.
         """
+        
+        if self.compression is not None:
+            raise ValueError("The bw-transformation must be decompressed before.")
         
         if option == "classic":
             
@@ -145,12 +154,22 @@ class BurrowsWheeler():
                 
             return text
     
-    def occ(self, letter, pos):
+    def occurrence_count(self):
         """
-        Returns the number of occurrences of a letter in the text prefix [0:pos-1].
+        Add attribute "occs", which is a dictionary containing lists of same length as bw-transform.
+        These lists contains, for each index i, the number of occurrences of a letter in the text prefix [0:pos].
         """
         
-        return self.bwt[:pos].count(letter)
+        if hasattr(self, "occs"):
+            raise AttributeError("The bw-transformation object contains already the \"occs\" attribute.")
+        
+        self.occs = {letter: list() for letter in ALPHABET}
+        for letter in ALPHABET:
+            n = 0
+            for i in range(len(self.bwt)):
+                if self.bwt[i] == letter:
+                    n += 1
+                self.occs[letter].append(n)
     
     def ltf_mapping(self, index):
         """
@@ -159,22 +178,24 @@ class BurrowsWheeler():
         
         letter = self.bwt[index]
         
-        return self.counts[letter] + self.occ(letter, index)
+        return self.counts[letter] + self.occs[letter][index] - 1
     
     def occurrence_number(self, pattern):
         
+        if not hasattr(self, "occs"):
+            raise AttributeError("The attribute \"occs\" must be computed before using indexing.")
+        
         letter = pattern[len(pattern) - 1]
-        First = self.counts[letter] + 1; Last = self.counts[NEXT_LETTER[letter]];
+        First = self.counts[letter]; Last = self.counts[NEXT_LETTER[letter]] - 1;
         
-        for i in reversed(range(len(pattern) - 1)):
+        for i in reversed(range(len(pattern)-1)):
             letter = pattern[i]
-            First = self.counts[letter] + self.occ(letter, First-1) + 1
-            Last = self.counts[letter] + self.occ(letter, Last)
-            if Last < First: break
+            First = self.counts[letter] + self.occs[letter][First-1]
+            Last = self.counts[letter] + self.occs[letter][Last-1]
+            if Last < First:
+                break
         
-        return None if Last < First else First, Last
-
-
+        return None if Last < First else (First, Last)
 
 def pattern_search(text, pattern):
     
@@ -187,7 +208,3 @@ def pattern_search(text, pattern):
             pos.append(index)
 
     return pos
-        
-        
-        
-        
