@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 
-ALPHABET = [chr(i) for i in range(128)]
+ALPHABET = [chr(i) for i in range(32,128)]
+ALPHABET.insert(0, "\n"); ALPHABET.insert(1, "\t"); ALPHABET.insert(2, "\r")
 ALPHABET.insert(0, ALPHABET.pop(ALPHABET.index("$")))
+for i in range(10): ALPHABET.remove(str(i))
 POS = {c : p for (p, c) in enumerate(ALPHABET)}
 
 class SaStrOrder(str):
     
-    def __init__(self, text):
+    def __init__(self, text, *args):
         super().__init__()
         
     def __lt__(self, other):
