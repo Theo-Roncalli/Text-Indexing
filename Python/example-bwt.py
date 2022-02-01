@@ -3,16 +3,14 @@
 import BurrowsWheeler as bw
 import time
 
-print("\n------------------------Suffix Array------------------------\n")
+print("\n------------------------Burrows Wheeler Transformation------------------------\n")
 
 pattern = "ana"
-text = "ananasbanana$"
-path = None
 text = None
 path = "romeo_juliette_long.txt"
 
 if text and path:
-    raise TypeError("SuffixArray __init__() takes either text or path argument")
+    raise TypeError("We must choose between either text or path argument.")
 elif not text and path:
             with open(path, 'r') as file:
                 text = file.read()
@@ -38,6 +36,6 @@ print("The occurrences with full scan: ", res, " and the computational time is: 
 del start, end, res
 
 start = time.time()
-res = bwt.occurrence_number(pattern)
+res = bwt.pattern_search(pattern)
 end = time.time()
 print("The occurrences with bwt indexing: ", res, " and the computational time is: ", end-start, sep="")
