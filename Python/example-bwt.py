@@ -36,6 +36,6 @@ print("The occurrences with full scan: ", res, " and the computational time is: 
 del start, end, res
 
 start = time.time()
-res = bwt.pattern_search(pattern)
+res = bwt.occurrence_positions(pattern)
 end = time.time()
 print("The occurrences with bwt indexing: ", res, " and the computational time is: ", end-start, sep="")

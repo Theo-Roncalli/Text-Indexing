@@ -182,7 +182,7 @@ class BurrowsWheeler():
         letter = self.bwt[index]
         return self.counts[letter] + self.occs[letter][index] - 1
     
-    def occurrence_number(self, pattern):
+    def pattern_search_matrix(self, pattern):
         
         if not hasattr(self, "occs"):
             raise AttributeError("The attribute \"occs\" must be computed before using indexing.")
@@ -194,17 +194,22 @@ class BurrowsWheeler():
         
         for i in reversed(range(len(pattern)-1)):
             letter = pattern[i]
-            First = self.counts[letter] + self.occs[letter][First]
-            Last = self.counts[letter] + self.occs[letter][Last+1] - 1
+            First = self.counts[letter] + self.occs[letter][First-1]
+            Last = self.counts[letter] + self.occs[letter][Last] - 1
             if Last < First:
                 return None
         
         return First, Last + 1
-    
-    def pattern_search(self, pattern):
+
+    def occurrence_number(self, pattern):
         
-        start, end = self.occurrence_number(pattern)
-        return [self.mark[i] for i in range(start, end)]
+        First, Last = self.pattern_search_matrix(pattern)
+        return Last - First
+    
+    def occurrence_positions(self, pattern):
+        
+        First, Last = self.pattern_search_matrix(pattern)
+        return [self.mark[i] for i in range(First, Last)]
     
     """
     def get_position(self, i):
