@@ -194,12 +194,12 @@ class BurrowsWheeler():
         
         for i in reversed(range(len(pattern)-1)):
             letter = pattern[i]
-            First = self.counts[letter] + self.occs[letter][First-1]
-            Last = self.counts[letter] + self.occs[letter][Last-1]
+            First = self.counts[letter] + self.occs[letter][First]
+            Last = self.counts[letter] + self.occs[letter][Last+1] - 1
             if Last < First:
-                break
+                return None
         
-        return None if Last < First else (First, Last)
+        return First, Last + 1
     
     def pattern_search(self, pattern):
         
