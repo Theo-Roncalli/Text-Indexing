@@ -1,0 +1,260 @@
+\documentclass[11pt,twoside]{article}
+
+\usepackage[table]{xcolor}
+\usepackage[latin9]{inputenc}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{commath}
+\usepackage{fancybox}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage[hyphens]{url}
+\usepackage{arydshln}
+\usepackage{multirow}
+\usepackage{pdflscape}
+\usepackage{tikz}
+\usepackage{comment}
+\usepackage{nicefrac}
+%\usepackage{mathtools}
+\usepackage{subcaption}
+\usepackage{dsfont}
+\usepackage{smartdiagram}
+\usepackage{lipsum}
+\usepackage[super]{nth}
+\usepackage{natbib}
+\usepackage[colorlinks = true, linkcolor = blue, urlcolor = blue,
+            citecolor = blue, anchorcolor = blue]{hyperref}
+\usepackage{hyperref}
+\usepackage{dcolumn,booktabs}
+\usepackage{algpseudocode}
+\usepackage{algorithm}
+\usepackage{array}
+\newcolumntype{F}{>{\centering\arraybackslash}p{4.3cm}}
+\newcolumntype{d}[1]{D{.}{.}{#1}}
+
+\tikzset{font={\fontsize{10pt}{12}\selectfont}}
+\theoremstyle{definition}
+\newtheorem{example}{Example}
+
+\newlength{\figurewidth}
+\setlength{\figurewidth}{120mm}
+\newlength{\figureheight}
+\setlength{\figureheight}{85mm}
+\setlength{\textwidth}{160mm}
+\setlength{\topmargin}{-10mm}
+\setlength{\headheight}{5mm}
+\setlength{\headsep}{5.3mm}
+\setlength{\topskip}{5mm}
+\setlength{\footskip}{5mm}
+\setlength{\textheight}{230mm}
+\setlength{\footskip}{10mm}
+\setlength{\evensidemargin}{2.0mm}
+\setlength{\oddsidemargin}{2.0mm}
+
+\lhead{}
+\chead{\color{amundi_dark_blue}Notes on Ferragina and Manzini work (2005): Text indexing and compression}
+\rhead{}
+\lfoot{}
+\cfoot{\thepage}
+\rfoot{}
+\renewcommand{\headrulewidth}{1.0pt}
+\renewcommand{\footrulewidth}{1.0pt}
+
+\pagestyle{fancy}
+
+\def\tableskip{\vskip 10pt plus 2pt minus 2pt\relax}
+\def\figureskip{\vskip 10pt plus 2pt minus 2pt\relax}
+\def\graycell{\cellcolor{gray!55}}
+\newcommand{\minitab}[2][l]{\begin{tabular}{#1}#2\end{tabular}}
+\newtheorem{remark}{Remark}
+\newtheorem{theo}{Theorem}
+\def\limfunc#1{\mathop{\rm #1}}
+\def\func#1{\mathop{\rm #1}}
+
+\graphicspath{{Figures/}}
+
+\newcommand{\TsI}{\hspace{1pt}}
+\newcommand{\TsII}{\hspace{2pt}}
+\newcommand{\TsIII}{\hspace{3pt}}
+\newcommand{\TsV}{\hspace{5pt}}
+\newcommand{\TsVIII}{\hspace{8pt}}
+\newcommand{\TsX}{\hspace{10pt}}
+\newcommand{\TsXIII}{\hspace{13pt}}
+
+\algnewcommand\algorithmicforeach{\textbf{for each}}
+\algdef{S}[FOR]{ForEach}[1]{\algorithmicforeach\ #1\ \algorithmicdo}
+
+\DeclareMathAlphabet\mathbfcal{OMS}{cmsy}{b}{n}
+\newcommand*\LogL{\ensuremath{\boldsymbol\ell}}
+\DeclareMathAlphabet{\mathpzc}{OT1}{pzc}{m}{it}
+
+\usetikzlibrary{3d, decorations.text, shapes.arrows, positioning, fit, backgrounds}
+\usetikzlibrary{shapes, calc, arrows, decorations.markings}
+
+\def\bwt{\mathrm{BWT}}
+\def\card{\func{Card}\nolimits}
+\def\first{\mathcal{F}}
+\def\last{\mathcal{L}}
+\def\counts{\func{C}\nolimits}
+\def\occs{\func{occs}\nolimits}
+\def\next{\func{next\_letter}\nolimits}
+\def\ltf{\func{LTF}\nolimits}
+\def\iter{\mathrm{iter}}
+
+\setcounter{tocdepth}{4}
+
+\begin{document}
+
+\title{\textbf{\color{amundi_blue}Notes on Ferragina and Manzini work (2005):\\Text indexing and compression}}
+
+\author{
+{\color{amundi_dark_blue} Th\'eo Roncalli} \\
+Student \\
+Paris-Saclay University, Paris \\
+\texttt{theo.roncalli@universite-paris-saclay.fr} \and
+{\color{amundi_dark_blue} Donatien Leg\'e} \\
+Student \\
+Paris-Saclay University, Paris \\
+\texttt{donatien.lege@universite-paris-saclay.fr}}
+
+\date{\color{amundi_dark_blue}February 2021}
+
+\maketitle
+
+\clearpage
+
+\section{Introduction}
+
+As the amount of data grows exponentially, the matter of compression and indexing is important, especially in the field of bioinformatics where the pattern search and mapping are two fields that draw attention for some years. They are employed in many applications such as for manipulating ChiP-Seq or RNA-seq data. Numerous tools have been proposed to perform indexing such as trie or B-tree. Nevertheless, these data structures can grow very fast and require important memory space. The suffix array is an interesting alternative to overcome the issue of spatial complexity. Here, we are interested in the work of \citet{Ferragina-2005} who focus on the \textit{Burrows-Wheeler transformation} data structure \citep{Burrows-1994}. First, it was used for data compression, but then \citet{Ferragina-2005} uses it as a full-text index. In this work, we present the contribution of the work of \citet{Ferragina-2005}. Section \ref{sec:concepts} describe an important concept: the \textit{Burrows-Wheeler transformation} \citep{Burrows-1994}. This concept is important for understanding how indexing can be performed. Section \ref{sec:algorithms} introduces the algorithms performed for indexing. Section \ref{sec:conclusion} is a discussion about the performance of the algorithms. The reader can find some implementation of the indexing algorithms\footnote{The proposed algorithm implementations are not competitive with those proposed by the authors because some data structures are not respected in order to make the code easier to write but taking more RAM memory.} at the following address: \url{https://github.com/Theo-Roncalli/Text-Indexing}.
+
+\section{Burrows-Wheeler transform}\label{sec:concepts}
+
+Among the many concepts used by \citet{Ferragina-2005}, the \textit{Burrows-Wheeler transformation} (BWT) developed by \citet{Burrows-1994} is at the heart of their work. The BWT algorithm consists in rearranging a text $T$ into a new string $L$ of same length in such a way that identical characters bring together and that the transformation is reversible. With a more formal definition, the BWT string corresponds to the last column of a sorted circular shift of all text's suffices. Here, \citet{Ferragina-2005} consider the output string $L$ as an important part of their index data structure. For building it, an alphabetical order must be defined over the alphabet $\mathcal{A}$. Then, the text input $T$ is transformed by following four steps: (1) concatenate the text $T$ with a special character $\$$ at the end of the text where this character must be the first character in the alphabetical order and must not be present in the initial text $T$, (2) build a matrix $\mathcal{M}$ of dimension $n \times n$ whose rows are the cyclic shifts of the text and where $n$ is the size of the new text, (3) sort the rows of the matrix $\mathcal{M}$ by lexicographic order and (4) construct the BWT string by setting $L$ as the string corresponding to the last column of the matrix $\mathcal{M}$. From a combinatorial optimization perspective, the BWT string can be computed in a linear complexity $\mathcal{O}\left(n\right)$ from the suffix array data structure.
+
+\begin{example}\label{ex:bw1}
+Let us consider an input string $T = \textit{tester}$. First of all, we append a smaller character $\$$ than any other character in the text $T$. In Table \ref{tab:example_bw}, the step (2) and (3) are performed. We obtain $F = \$eerstt$ and $L = \textit{rttees\$}$ by taking the first and last column of the matrix $\mathcal{M}$ respectively. The output text $L$ correspond to the BWT string. We observe that identical letters are contiguous in the permutated text $L$.
+
+\begin{table}[h]
+\centering
+\caption{Construction of the BWT matrix $\mathcal{M}$ for the input string $T = \text{tester}$}
+\label{tab:example_bw}
+\begin{tabular}{cc}
+ \multicolumn{2}{c}{Step (2)} \\
+ \\
+ \hline
+ 1 & tester$\$$ \\
+ 2 & ester$\$$t \\
+ 3 & ster$\$$te \\
+ 4 & ter$\$$tes \\
+ 5 & er$\$$test \\
+ 6 & r$\$$teste \\
+ 7 & $\$$tester \\
+\end{tabular}
+\qquad
+$\Longrightarrow$
+\qquad
+\begin{tabular}{cc}
+ \multicolumn{2}{c}{Step (3)} \\
+ & $F$ \hspace{0.45cm} $L$ \\
+ \hline
+ 1 & $\$$tester \\
+ 2 & er$\$$test \\
+ 3 & ester$\$$t \\
+ 4 & r$\$$teste \\
+ 5 & ster$\$$te \\
+ 6 & ter$\$$tes \\
+ 7 & tester$\$$ \\
+\end{tabular}
+\end{table}
+\end{example}
+
+As index $L$ contains numerous contiguous identical characters, some lossless data encoding allows an important compression on the output text $L$. The compression of the output string $L$ is important in order to reduce the space complexity. The more intuitive is the \textit{run-length encoding} which consists in replacing long runs of identical characters by its number following by its data value. For instance, if we consider the BWT string $L = rtteesr\$$ (example \ref{ex:bw1}), we obtain the encoding text $L^{\prime} = r2t2es\$$. In this example, the text has not been compressed with regard to its initial and new length. But if the text contains long runs of repeated characters -- which is the case with longer input text $T$, the compression is important. \citet{Ferragina-2005} proposes another compression: the \textit{BW\_RLX} algorithm which is an extension of the \textit{move-to-front encoding} \citep{Bentley-1986}. By simplification, and because the codes are implemented in Python, we have only used the run-length encoding. Indeed, the \textit{BW\_RLX} algorithm requires manipulation of bits and ASCII or UTF encoding at the same time, which is not a simple task for us to use on Python. Hence, our compression is less competitive since the \textit{BW\_RLX} encoding allows to have a smaller empirical entropy.
+
+\section{Indexing algorithms}\label{sec:algorithms}
+
+The search pattern consists in finding the number and positions of pattern's occurrences. \citet{Ferragina-2005} propose to count the number of occurrences before to get their positions. We denote $P_{1:p}$ a pattern to search in text $T$, $c$ a character in the alphabet $\mathcal{A}$, $\counts$ a dictionary of length $\card\left(\mathcal{A}\right)$ such as $\counts\left[c\right]$ corresponds to the occurrence number of character $c$, $\occs\left(c, i\right)$ a function or data structure who corresponds to the number of occurrences of $c$ in the prefix $L_{1:i}$ and $\next\left(c\right)$ a function returning the next letter of $c$ in the lexicographic order. Algorithm \ref{alg:backward_search} computes the values of $\first^{\left(i\right)}$ and $\last^{\left(i\right)}$, which corresponds respectively to the first and last row in $\mathcal{M}$ prefixed by suffix pattern $P_{i:p}$. More generally, it returns only the values of $\first^{\left(1\right)}$ and $\last^{\left(1\right)}$ if and only if the first is inferior or equal to the second. In this algorithm, we start with the last letter of $P$. The first row prefixed by the letter $P_{p}$ is $\counts\left[c\right] + 1$ since the rows are lexicographically ordered and hence it is the number of characters smaller than $P_{p}$ plus one. The reasoning is same for computing the last row. Then, at each iteration, we enlarge the word of one letter, and we update the first and last row index prefixed by the new word. The new terms added for update the indices $\first^{\left(i\right)}$ and $\last^{\left(i\right)}$ is the term in the function $\occs\left(c, i\right)$. This procedure is repeated until the enlarged word corresponds to the pattern $P$ or $\first^{\left(i\right)} > \last^{\left(i\right)}$. In this last case, there is no pattern $P$ in text $T$.
+
+\begin{algorithm}[h]
+\caption{backward search}
+\label{alg:backward_search}
+\begin{algorithmic}
+\State Set $L$ the BWT index of the input string $T$, $P$ the pattern to search
+\State Initialize $c \leftarrow P_p$, $\first^{\left(p\right)} \leftarrow \counts\left[c\right] + 1$, $\last^{\left(p\right)} \leftarrow \counts\left[\next\left(c\right)\right]$
+\For{$i=p-1:1$}
+  \State $c \leftarrow P_{i}$
+  \State $\first^{\left(i\right)} \leftarrow \counts\left[c\right] + \occs(c, \first^{\left(i+1\right)}-1) + 1$
+  \State $\last^{\left(i\right)} \leftarrow \counts\left[c\right] + \occs(c, \last^{\left(i+1\right)})$
+  \If {$\first^{\left(i\right)} > \last^{\left(i\right)}$}
+    \State $\Return \{\emptyset\}$
+  \EndIf
+\EndFor
+\State \Return $\left(\first^{\left(1\right)}, \last^{\left(1\right)}\right)$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{example}\label{ex:bw2}
+As the previous example \ref{ex:bw1}, let us consider the input text $T = \textit{tester}$ and the index $L = \textit{rttees\$}$. Here we have $C[\$] = 0, C[e] = 1, C[r] = 3, C[s] = 4, C[t] = 5$. Let us search the occurrence number of pattern $P = \textit{te}$ in $T$. First, we obtain:
+\begin{eqnarray*}
+\first^{\left(2\right)} &=& \counts\left[e\right] + 1 = 2 \\ \last^{\left(2\right)} &=& \counts\left[\next\left(e\right)\right] = 3
+\end{eqnarray*}
+Indeed, the matrix $\mathcal{M}$ (see Figure \ref{tab:example_bw}) is prefixed by $P_{2} = \textit{e}$ at the second and third line. Then we compute the first and last line prefixed by $P_{1:2} = \textit{te}$ as follows:
+\begin{eqnarray*}
+\first^{\left(1\right)} &=& \counts\left[t\right] + \occs\left(t, 1\right) + 1 = 6 \\
+\last^{\left(1\right)} &=& \counts\left[t\right] + \occs\left(t, 3\right) = 7
+\end{eqnarray*}
+because we have $\occs\left(t, 1\right) = 0$ and $\occs\left(t, 3\right) = 2$. We observed that effectively, the sixth and seventh rows in $\mathcal{M}$ are prefixed by \textit{te}. The number of pattern occurrences is $\last^{\left(1\right)} - \first^{\left(1\right)} + 1 = 2$.
+\end{example}
+
+Now that we know how to count the occurrence number of a pattern $P$ in a text $T$, we may ask where it appears in this text. \citet{Ferragina-2005} proposes to mark some rows of matrix $\mathcal{M}$ such as we know their position in text $T$. For that, we can mark the rows whose the index is a multiple of a parameter $\eta$ -- in addition to the first one. Furthermore, the unknown position of row $i$ is not a problem. Indeed, we can use a property of the BWT which is the \textit{last-to-first column mapping}. It allows to move from the last column $L$ to the first column $F$ in matrix $\mathcal{M}$:
+\begin{equation*}
+\ltf\left(i\right) = \counts\left[L_{i}\right] + \occs\left(L_{i}, i\right)
+\end{equation*}
+This function is verified since the $i$-th character $c$ in text $F$ is also the $i$-th character $c$ in text $L$. Hence, we can use this function to move back in $L$ to its previous letter. Algorithm \ref{alg:bwt_text_mapping} performs the mapping between $L$ and $T$. For localize the positions of a pattern $P$, we must (1) run Algorithm \ref{alg:backward_search} for getting $\first$ and $\last$ values and then (2) run Algorithm \ref{alg:bwt_text_mapping} on each position in the range $\first$ to $\last$. The time complexity is linear with respect to the length of pattern $P$ and the occurrence number $\last^{\left(1\right)} - \first^{\left(1\right)} + 1$.
+
+\begin{algorithm}[h]
+\caption{$L$-to-$T$ mapping}
+\label{alg:bwt_text_mapping}
+\begin{algorithmic}
+\State Set $L$ the BWT index of the input string $T$, $i^{\left(0\right)}$ an integer corresponding to a position in $L$, $\mathcal{D}_{m}$ a data structure of marked rows $r_{i}$
+\State Initialize $\iter \leftarrow 0$
+\While {$r_{i} \notin \mathcal{D}_{m}$}
+ \State $\iter \leftarrow \iter + 1$
+ \State $i^{\left(\iter\right)} \leftarrow \ltf\left(i\right)$
+\EndWhile
+\State \Return $r_{i^{\left(\iter\right)}} + \iter$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{example}
+Let us consider the input text $T = \textit{tester}$. As seen in Table \ref{tab:example_bw}, we have $F = \$eerstt$. Let us suppose that $\eta = 3$. We have the following data structure $\mathcal{D}_{m}$ mapping between $L$ and $T$: $r_{1} : 6, r_{3} : 1, r_{6} : 3$. Let us suppose that we search the position in text $T$ of the fourth row in text $L$. We have: $\ltf(4) = \counts\left[e\right] + \occs\left(e, 4\right) = 1 + 1 = 2$. So we move to the second row and we compute the row containing the character preceding it: $\ltf(2) = \counts\left[t\right] + \occs\left(t, 2\right) = 5 + 1 = 6$. As we know that $r_{6} : 3$, we can break. We have repeated the procedure two times. Hence the fourth character in text $L$ corresponds to the fifth character in text $T$ since we have: $r_{6} + 2$.
+\end{example}
+
+\section{Conclusion}\label{sec:conclusion}
+
+In their article, \citet{Ferragina-2005} propose to use two index data structures: The first one is only based on the \textit{Burrows-Wheeler transformation} \citep{Burrows-1994} while the second one combine it with the LZ78 algorithm \citep{Ziv-1978}. Here we have only describe the first one which is an interesting choice in terms of tradeoff between time and spatial complexity. Indeed, it does not take lot of memory space since it is compressed. Moreover, the full-text index have a time complexity linear with respect to the size of the pattern and the number of occurrences. Nevertheless, the spatial complexity grows exponentially with respect to the size of the alphabet\footnote{This exponential spatial complexity is due to the computation of $\occs\left(c, i\right)$ since it requires to store some values of occurrence number for each character $c$.}. In the case of bioinformatics, this is not a real problem since the alphabet is small, even if we are considering amino acids instead of nucleotides. The index proposed here have some limits: it cannot search for similar but different patterns and a modification in the text implies a full updating of the index.\medskip
+
+About our implementation of algorithms\footnote{We recall that this implementation is available \href{https://github.com/Theo-Roncalli/Text-Indexing}{here}.}, some simplifications have been made. For instance, \citet{Ferragina-2005} proposes to use a B packed-tree for the data structure $D_{m}$. In our case, we have store all mappings between the indices of $L$ and $T$ with an array by considering a step $\eta = 1$. Furthermore, it takes more memory space in our case. Also, we have implemented the compression with the \textit{run-length encoding} instead of the \textit{BW\_RLX} algorithm\footnote{It still gives good results. We have performed this compression on a text of $150000$ characters which has been compressed by $40\%$.}. Hence, the realised implementation is not competitive in terms of spatial complexity but they give a preliminary code for indexing.
+
+\clearpage
+
+\bibliographystyle{apalike}
+
+\begin{thebibliography}{1}
+
+\bibitem[Bentley \textsl{et al.}(1986)]{Bentley-1986} Bentley, J. L., Sleator, D. D., Tarjan, R. E., \& Wei, V. K. (1986), A Locally Adaptive Data Compression Scheme, \textit{Communications of the ACM}, 29(4), pp. 320-330.
+
+\bibitem[Burrows and Wheeler(1994)]{Burrows-1994} Burrows, M., \& Wheeler, D. (1994), A Block-Sorting Lossless Data Compression Algorithm, \textit{In Digital SRC Research Report}.
+
+\bibitem[Ferragina and Manzini(2005)]{Ferragina-2005} Ferragina, P., \& Manzini, G. (2005), Indexing Compressed Text, \textit{Journal of the ACM (JACM)}, 52(4), pp. 552-581.
+
+\bibitem[Kosaraju and Manzini(2000)]{Kosaraju-2000} Kosaraju, S. R., \& Manzini, G. (2000), Compression of Low Entropy Strings with Lempel--Ziv Algorithms, \textit{SIAM Journal on Computing}, 29(3), pp. 893-911.
+
+\bibitem[Ziv and Lempel(1978)]{Ziv-1978} Ziv, J., \& Lempel, A. (1978), Compression of Individual Sequences via Variable-Rate Coding, \textit{IEEE transactions on Information Theory}, 24(5), pp. 530-536.
+
+\end{thebibliography}
+
+\clearpage
+
+\end{document} 
