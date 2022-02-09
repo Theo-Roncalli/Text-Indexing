@@ -41,7 +41,7 @@ time2 = end2 - start2
 
 print("\n------------------------Compression------------------------\n")
 print("Time (run-length encoding): ", time2, " sec.", sep = "")
-print("Length (text): ", len(text), "char.", sep = "")
+print("Length (text): ", len(text), " char.", sep = "")
 print("Length (compressed bwt): ", len(bwt), " char.", sep = "")
 
 bwt.decompress()

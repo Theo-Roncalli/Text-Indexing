@@ -54,6 +54,9 @@ class BurrowsWheeler():
     def __str__(self):
         return self.bwt
     
+    def __len__(self):
+        return len(self.bwt)
+    
     def compress(self, encode="run-length"):
         
         if self.compression:
@@ -182,7 +185,7 @@ class BurrowsWheeler():
         letter = self.bwt[index]
         return self.counts[letter] + self.occs[letter][index] - 1
     
-    def pattern_search_matrix(self, pattern):
+    def backward_search(self, pattern):
         
         if not hasattr(self, "occs"):
             raise AttributeError("The attribute \"occs\" must be computed before using indexing.")
@@ -203,23 +206,13 @@ class BurrowsWheeler():
 
     def occurrence_number(self, pattern):
         
-        First, Last = self.pattern_search_matrix(pattern)
+        First, Last = self.backward_search(pattern)
         return Last - First
     
     def occurrence_positions(self, pattern):
         
-        First, Last = self.pattern_search_matrix(pattern)
-        return [self.mark[i] for i in range(First, Last)]
-    
-    """
-    def get_position(self, i):
-        "Returns the position in the text of the bwt's i-th element."
-        idx = next(row for row in self.mark.keys() if row >= i)
-        if idx == i:
-            return self.mark[idx]
-        else:
-            return None
-    """
+        First, Last = self.backward_search(pattern)
+        return sorted([self.mark[i] for i in range(First, Last)])
 
 def pattern_search(text, pattern):
     
